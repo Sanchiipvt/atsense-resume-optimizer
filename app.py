@@ -22,49 +22,42 @@ from backend.llm_optimizer import (
 # 1. BRANDING & PAGE CONFIG
 st.set_page_config(page_title="ATSense | AI Resume Optimizer", layout="wide")
 
-# Custom CSS for Premium Font (Inter) and clean UI
+# Safe CSS for Premium Font (Inter) that won't break the upload button
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
-        html, body, [class*="st-"] {
+        html, body, p, div, h1, h2, h3, h4, h5, h6, span {
             font-family: 'Inter', sans-serif !important;
         }
         
-        /* Subtle styling for the metric cards to use the ATSense palette */
         div[data-testid="stMetricValue"] {
             color: #40ABD9 !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Custom Title using your palette's light blue (#40ABD9)
+# Custom Title (Removed "Enterprise")
 st.markdown("<h1 style='color: #40ABD9; margin-bottom: 0px;'>ATSense</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #A0B2C6; font-size: 1.2rem; margin-top: 0px;'>Enterprise AI Resume Optimization</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #A0B2C6; font-size: 1.2rem; margin-top: 0px;'>AI Resume Optimization</p>", unsafe_allow_html=True)
 st.divider()
 
 # --- UI Layout ---
 c_left, c_right = st.columns([1, 1], gap="large")
 
 with c_left:
-    uploaded_resume = st.file_uploader("Upload Resume (PDF/DOCX)", type=["pdf", "docx"])
+    uploaded_resume = st.file_uploader("📂 Upload Resume (PDF/DOCX)", type=["pdf", "docx"])
 
 with c_right:
-    job_text = st.text_area("Paste Job Description", height=150)
+    job_text = st.text_area("📝 Paste Job Description", height=150)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Toggle for AI features
-use_ai = st.toggle(
-    "Enable AI-Powered Optimization (requires GEMINI_API_KEY)",
-    value=False
-)
-
+# Main Action Button (AI Toggle Removed)
 if st.button("Analyze Resume", use_container_width=True):
     if not uploaded_resume or not job_text.strip():
         st.warning("Please upload a resume and paste a job description to begin.")
     else:
-        # UX: Clean popup notification (No emojis)
         st.toast('File uploaded successfully. Analyzing data...')
         
         with st.spinner("Processing documents..."):
@@ -122,71 +115,70 @@ if st.button("Analyze Resume", use_container_width=True):
                 st.info(f"• {s}")
 
         # ══════════════════════════════════════════════
-        # AI OPTIMIZATION LOOP
+        # AI OPTIMIZATION LOOP (Runs automatically now)
         # ══════════════════════════════════════════════
-        if use_ai:
-            st.divider()
-            st.subheader("AI-Powered Optimization Engine")
+        st.divider()
+        st.subheader("AI-Powered Optimization Engine")
 
-            if not os.environ.get("GEMINI_API_KEY"):
-                st.error(
-                    "GEMINI_API_KEY not found. "
-                    "Ensure it is set in your .env file."
+        if not os.environ.get("GEMINI_API_KEY"):
+            st.error(
+                "GEMINI_API_KEY not found. "
+                "Ensure it is set in your .env file or Streamlit secrets."
+            )
+        else:
+            with st.spinner("Generating AI recommendations..."):
+                diagnosis = optimization_loop_summary(
+                    original_score=final_score,
+                    skill_score=skill_score,
+                    tfidf_score=tfidf_score,
+                    missing_skills=list(missing),
+                    matched_skills=list(matched)
                 )
+
+                st.info(f"**Score Diagnosis:** {diagnosis}")
+
+                ai_result = generate_optimized_bullets(
+                    resume_text=resume_text,
+                    job_description=job_text,
+                    missing_skills=list(missing),
+                    keyword_gaps=gaps
+                )
+
+            st.subheader("Priority Skills to Address")
+            priority = ai_result.get("priority_skills", [])
+            if priority:
+                cols = st.columns(len(priority))
+                for i, skill in enumerate(priority):
+                    cols[i].success(skill)
+
+            st.subheader("Strategy Summary")
+            st.write(ai_result.get("strategy_summary", ""))
+
+            st.subheader("Suggested Rewritten Bullet Points")
+            bullets = ai_result.get("rewritten_bullets", [])
+
+            if bullets:
+                for i, bullet in enumerate(bullets, 1):
+                    with st.expander(
+                        f"Bullet {i} — {bullet.get('section', 'Resume')} "
+                        f"| Targets: {bullet.get('skill_addressed', '')}"
+                    ):
+                        st.caption(
+                            f"**Replace a bullet like:** "
+                            f"{bullet.get('original_hint', '')}"
+                        )
+                        st.success(
+                            f"**Suggested Rewrite:**\n\n"
+                            f"{bullet.get('rewritten', '')}"
+                        )
             else:
-                with st.spinner("Generating AI recommendations..."):
-                    diagnosis = optimization_loop_summary(
-                        original_score=final_score,
-                        skill_score=skill_score,
-                        tfidf_score=tfidf_score,
-                        missing_skills=list(missing),
-                        matched_skills=list(matched)
-                    )
-
-                    st.info(f"**Score Diagnosis:** {diagnosis}")
-
-                    ai_result = generate_optimized_bullets(
-                        resume_text=resume_text,
-                        job_description=job_text,
-                        missing_skills=list(missing),
-                        keyword_gaps=gaps
-                    )
-
-                st.subheader("Priority Skills to Address")
-                priority = ai_result.get("priority_skills", [])
-                if priority:
-                    cols = st.columns(len(priority))
-                    for i, skill in enumerate(priority):
-                        cols[i].success(skill)
-
-                st.subheader("Strategy Summary")
-                st.write(ai_result.get("strategy_summary", ""))
-
-                st.subheader("Suggested Rewritten Bullet Points")
-                bullets = ai_result.get("rewritten_bullets", [])
-
-                if bullets:
-                    for i, bullet in enumerate(bullets, 1):
-                        with st.expander(
-                            f"Bullet {i} — {bullet.get('section', 'Resume')} "
-                            f"| Targets: {bullet.get('skill_addressed', '')}"
-                        ):
-                            st.caption(
-                                f"**Replace a bullet like:** "
-                                f"{bullet.get('original_hint', '')}"
-                            )
-                            st.success(
-                                f"**Suggested Rewrite:**\n\n"
-                                f"{bullet.get('rewritten', '')}"
-                            )
-                else:
-                    st.success(
-                        "Your resume is already well-optimized for this job description."
-                    )
-
-                st.divider()
-                st.info(
-                    "**Optimization Loop:** Apply these suggestions to your "
-                    "resume, re-upload the document, and run the analysis again "
-                    "to measure your score improvement."
+                st.success(
+                    "Your resume is already well-optimized for this job description."
                 )
+
+            st.divider()
+            st.info(
+                "**Optimization Loop:** Apply these suggestions to your "
+                "resume, re-upload the document, and run the analysis again "
+                "to measure your score improvement."
+            )
