@@ -41,25 +41,43 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
+    /* 1. FORCE ALL TEXT TO BE DARK REGARDLESS OF THEME */
     html, body, [class*="st-"] {
         font-family: 'Inter', sans-serif !important;
+        color: #1e293b !important; 
     }
 
-    /* 1. GLOBALLY CONSTRAIN WIDTH FOR PERFECT ALIGNMENT */
+    /* 2. GLOBALLY CONSTRAIN WIDTH */
     .block-container {
         max-width: 1000px !important;
         padding-top: 3rem !important;
     }
     
-    /* 2. Background Gradient Centered */
+    /* 3. Background Gradient */
     .stApp {
         background: radial-gradient(circle at 50% -20%, #e0e7ff 0%, #f3e8ff 30%, #ffffff 70%) !important;
     }
 
-    /* 3. Primary Button */
+    /* 4. FORCE INPUT BOXES TO BE LIGHT */
+    div[data-testid="stFileUploadDropzone"] { 
+        background-color: rgba(255, 255, 255, 0.8) !important; 
+        border: 2px dashed #cbd5e1 !important; 
+        border-radius: 0.5rem !important;
+    }
+    div[data-testid="stFileUploadDropzone"]:hover {
+        border-color: #a855f7 !important;
+        background-color: #ffffff !important;
+    }
+    div[data-baseweb="textarea"] > div { 
+        background-color: rgba(255, 255, 255, 0.8) !important; 
+        border: 1px solid #e2e8f0 !important; 
+        border-radius: 0.5rem !important;
+    }
+
+    /* 5. Primary Button */
     div.stButton > button[kind="primary"] {
         background: linear-gradient(90deg, #60a5fa 0%, #c084fc 100%) !important;
-        color: white !important;
+        color: white !important; /* Keep button text white */
         border: none !important;
         border-radius: 9999px !important;
         padding: 0.5rem 2.5rem !important;
@@ -72,13 +90,13 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4) !important;
     }
     
-    /* 5. Badges */
+    /* 6. Badges */
     div[data-testid="stMetricValue"] { color: #8b5cf6 !important; } 
     .badge-critical { background: #fde8e8; color: #c0392b; padding: 2px 9px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
     .badge-warn { background: #fef9e7; color: #b7770d; padding: 2px 9px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
     .badge-ok { background: #e8f8f5; color: #1e8449; padding: 2px 9px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
     
-    /* 6. Nav & Hero Perfect Centering */
+    /* 7. Nav & Hero Perfect Centering */
     .nav-container { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; margin-bottom: 2rem; width: 100%; }
     .nav-logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; font-weight: 700; color: #1e293b; }
     .nav-logo-icon { background: #a855f7; color: white; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
