@@ -166,7 +166,7 @@ with col_right:
     st.markdown('**Job description**')
     job_text = st.text_area(
         "Paste Job Description",
-        height=110,  # <-- Change this number to 110
+        height=68,  # <-- Change this number to 110
         placeholder="e.g. We're hiring a Senior Frontend Engineer with strong experience in React, TypeScript...",
         label_visibility="collapsed"
     )
