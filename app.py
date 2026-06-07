@@ -1,7 +1,6 @@
 """
 ATSense — AI Resume Optimizer  |  app.py
 =========================================
-Streamlit UI layer integrated with modern frontend styling.
 """
 
 from dotenv import load_dotenv
@@ -14,25 +13,14 @@ import streamlit as st
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from backend.main import (
-    # Text extraction
-    extract_text_from_file,
-    # Pre-processing
-    preprocess_text, extract_skills, SKILLS,
-    # Core ML pipeline
-    compute_similarity_score,
-    weighted_match_skills,
-    final_ats_score,
-    # Analysis
-    keyword_gap, keyword_suggestions,
-    split_resume_sections, section_wise_scores,
-    generate_skill_suggestions,
-    # New: stuffing detection
-    detect_keyword_stuffing,
+    extract_text_from_file, preprocess_text, extract_skills, SKILLS,
+    compute_similarity_score, weighted_match_skills, final_ats_score,
+    keyword_gap, keyword_suggestions, split_resume_sections, section_wise_scores,
+    generate_skill_suggestions, detect_keyword_stuffing,
 )
 
 from backend.llm_optimizer import (
-    generate_optimized_bullets,
-    optimization_loop_summary,
+    generate_optimized_bullets, optimization_loop_summary,
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -41,30 +29,34 @@ from backend.llm_optimizer import (
 
 st.set_page_config(
     page_title="ATSense | AI Resume Optimizer",
-    page_icon="✨",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Combine new layout CSS with your existing badge/metric CSS
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    /* Hide default Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* 1. Global Styles & Background Matching Screenshot */
     html, body, [class*="st-"] {
         font-family: 'Inter', sans-serif !important;
     }
+
+    /* 1. GLOBALLY CONSTRAIN WIDTH FOR PERFECT ALIGNMENT */
+    .block-container {
+        max-width: 1000px !important;
+        padding-top: 3rem !important;
+    }
+    
+    /* 2. Background Gradient Centered */
     .stApp {
-        background: linear-gradient(180deg, #eff6ff 0%, #ffffff 600px) !important;
+        background: radial-gradient(circle at 50% -20%, #e0e7ff 0%, #f3e8ff 30%, #ffffff 70%) !important;
     }
 
-    /* 2. OVERRIDE STREAMLIT'S DEFAULT PRIMARY BUTTON */
+    /* 3. Primary Button */
     div.stButton > button[kind="primary"] {
         background: linear-gradient(90deg, #60a5fa 0%, #c084fc 100%) !important;
         color: white !important;
@@ -73,148 +65,56 @@ st.markdown("""
         padding: 0.5rem 2.5rem !important;
         font-weight: 600 !important;
         font-size: 1.1rem !important;
-        box-shadow: 0 4px 14px 0 rgba(168, 85, 247, 0.3) !important;
         transition: all 0.3s ease !important;
     }
     div.stButton > button[kind="primary"]:hover {
-        background: linear-gradient(90deg, #3b82f6 0%, #a855f7 100%) !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4) !important;
-        color: white !important;
+        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4) !important;
     }
 
-    /* 3. Style the File Uploader to match the screenshot */
-    [data-testid="stFileUploadDropzone"] {
-        border: 2px dashed #cbd5e1 !important;
-        border-radius: 1rem !important;
-        background-color: transparent !important;
-        transition: all 0.2s ease !important;
+    /* 4. Fix File Uploader */
+    div[data-testid="stFileUploadDropzone"] { 
+        background-color: #ffffff !important; 
+        border: 2px dashed #cbd5e1 !important; 
+        border-radius: 0.5rem !important;
+        /* Removed the padding/height commands that were breaking the text */
     }
-    [data-testid="stFileUploadDropzone"]:hover {
+    
+    /* Make the hover state look nice */
+    div[data-testid="stFileUploadDropzone"]:hover {
         border-color: #a855f7 !important;
         background-color: #f8fafc !important;
     }
 
-    /* 4. Your Custom Result Styles */
-    div[data-testid="stMetricValue"] { color: #8b5cf6 !important; } 
-    div[data-testid="stExpander"] details summary {
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    .badge-critical {
-        background: #fde8e8; color: #c0392b;
-        padding: 2px 9px; border-radius: 4px;
-        font-size: 0.75rem; font-weight: 600;
-    }
-    .badge-warn {
-        background: #fef9e7; color: #b7770d;
-        padding: 2px 9px; border-radius: 4px;
-        font-size: 0.75rem; font-weight: 600;
-    }
-    .badge-ok {
-        background: #e8f8f5; color: #1e8449;
-        padding: 2px 9px; border-radius: 4px;
-        font-size: 0.75rem; font-weight: 600;
+    div[data-baseweb="textarea"] > div { 
+        background-color: #ffffff !important; 
+        border: 1px solid #e2e8f0 !important; 
+        border-radius: 0.5rem !important;
     }
     
-    /* Navigation Bar */
-    .nav-container {
+    /* 5. Badges */
+    div[data-testid="stMetricValue"] { color: #8b5cf6 !important; } 
+    .badge-critical { background: #fde8e8; color: #c0392b; padding: 2px 9px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-warn { background: #fef9e7; color: #b7770d; padding: 2px 9px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-ok { background: #e8f8f5; color: #1e8449; padding: 2px 9px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    
+    /* 6. Nav & Hero Perfect Centering */
+    .nav-container { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; margin-bottom: 2rem; width: 100%; }
+    .nav-logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; font-weight: 700; color: #1e293b; }
+    .nav-logo-icon { background: #a855f7; color: white; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    
+    .hero-container { 
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: center;
-        padding: 1.5rem 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
+        text-align: center; 
+        max-width: 800px; 
+        margin: 0 auto 3rem auto; 
     }
-    .nav-logo {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-    }
-    .nav-logo-icon {
-        background: #a855f7;
-        color: white;
-        padding: 6px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .nav-links {
-        display: flex;
-        gap: 2rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #64748b;
-    }
-
-    /* Hero Section */
-    .hero-container {
-        text-align: center;
-        max-width: 800px;
-        margin: 3rem auto 2rem auto;
-        padding: 0 1rem;
-    }
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: white;
-        border: 1px solid #e2e8f0;
-        padding: 0.375rem 1rem;
-        border-radius: 9999px;
-        font-size: 0.875rem;
-        color: #475569;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        margin-bottom: 2rem;
-    }
-    .hero-title {
-        font-size: 3.5rem;
-        font-weight: 800;
-        line-height: 1.15;
-        color: #1e293b;
-        margin-bottom: 1.5rem;
-    }
-    .hero-gradient {
-        background: linear-gradient(90deg, #3b82f6, #a855f7);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    .hero-subtitle {
-        font-size: 1.125rem;
-        color: #64748b;
-        max-width: 600px;
-        margin: 0 auto;
-        line-height: 1.6;
-    }
-
-    /* Feature Steps Cards */
-    .steps-container {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1.5rem;
-        max-width: 1200px;
-        margin: 4rem auto 2rem auto;
-        padding: 0 2rem;
-    }
-    .step-card {
-        background: white;
-        border: 1px solid #f1f5f9;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-    .step-num { font-size: 0.875rem; font-weight: 700; margin-bottom: 0.5rem; display: block; }
-    .step-1 { color: #3b82f6; }
-    .step-2 { color: #a855f7; }
-    .step-3 { color: #3b82f6; }
-    .step-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; }
-    .step-desc { font-size: 0.875rem; color: #64748b; line-height: 1.5; }
-
-    .custom-footer { text-align: center; padding: 3rem 0; font-size: 0.875rem; color: #94a3b8; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: white; border: 1px solid #e2e8f0; padding: 0.375rem 1rem; border-radius: 9999px; font-size: 0.875rem; color: #475569; margin-bottom: 1.5rem; }
+    .hero-title { font-size: 3rem; font-weight: 800; line-height: 1.2; color: #1e293b; margin-bottom: 1rem; }
+    .hero-gradient { background: linear-gradient(90deg, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-subtitle { font-size: 1.1rem; color: #64748b; max-width: 600px; margin: 0 auto; line-height: 1.6; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -232,13 +132,10 @@ st.markdown("""
             </div>
             <span>Atsense</span>
         </div>
-        <div class="nav-links">
-            <a href="#analyzer" style="text-decoration:none;">Analyzer</a>
-        </div>
     </div>
     
     <div class="hero-container">
-        <div class="badge">
+        <div class="hero-badge">
             <span style="color: #a855f7;">✨</span> Powered by TF-IDF & cosine similarity
         </div>
         <h1 class="hero-title">
@@ -252,46 +149,35 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 3. INPUT SECTION
+# 3. INPUT SECTION 
 # ──────────────────────────────────────────────────────────────────────────────
 
-st.markdown('<div id="analyzer" style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">', unsafe_allow_html=True)
+st.write("") 
 
 col_left, col_right = st.columns(2, gap="large")
 
 with col_left:
-    st.markdown('<p style="font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Resume</p>', unsafe_allow_html=True)
+    st.markdown('**Resume**')
     uploaded_resume = st.file_uploader(
         "Upload Resume (PDF or DOCX)",
         type=["pdf", "docx"],
-        label_visibility="collapsed",
-        help="Digital (text-based) PDFs give the best results. Scanned PDFs trigger OCR fallback with reduced accuracy."
+        label_visibility="collapsed"
     )
-    st.markdown('<p style="text-align: center; font-size: 0.75rem; color: #94a3b8; margin-top: -0.5rem;">PDF or DOCX • up to 10 MB</p>', unsafe_allow_html=True)
 
 with col_right:
-    st.markdown('<div style="display: flex; justify-content: space-between;"><p style="font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Job description</p></div>', unsafe_allow_html=True)
+    st.markdown('**Job description**')
     job_text = st.text_area(
         "Paste Job Description",
-        height=225,
+        height=110,  # <-- Change this number to 110
         placeholder="e.g. We're hiring a Senior Frontend Engineer with strong experience in React, TypeScript...",
-        label_visibility="collapsed",
-        help="The more complete the JD, the more accurate the keyword importance scoring."
+        label_visibility="collapsed"
     )
 
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Controls beneath inputs
-st.markdown("<br>", unsafe_allow_html=True)
+st.write("") 
 c1, c2, c3 = st.columns([1, 2, 1])
 with c2:
-    use_ai = st.toggle(
-        "Enable AI-Powered Bullet Rewriter (requires GEMINI_API_KEY)",
-        value=False,
-        help="Uses Google Gemini to generate contextual bullet-point rewrites targeting your specific missing skills."
-    )
+    use_ai = st.toggle("Enable AI-Powered Bullet Rewriter (requires GEMINI_API_KEY)")
     analyze_btn = st.button("✨ Analyze Resume", use_container_width=True, type="primary")
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 4. PIPELINE AND RESULTS
@@ -514,33 +400,36 @@ if analyze_btn:
 
 else:
     # ──────────────────────────────────────────────────────────────────────────
-    # 5. DEFAULT STATE: HOW IT WORKS (Hides when results appear)
+    # 5. DEFAULT STATE: HOW IT WORKS
     # ──────────────────────────────────────────────────────────────────────────
-    st.markdown("""
-        <div id="how-it-works" class="steps-container">
-            <div class="step-card">
-                <span class="step-num step-1">01</span>
-                <h4 class="step-title">Upload a resume</h4>
-                <p class="step-desc">Drop in a PDF or DOCX. We parse it locally for a fast first pass.</p>
-            </div>
-            <div class="step-card">
-                <span class="step-num step-2">02</span>
-                <h4 class="step-title">Paste the job</h4>
-                <p class="step-desc">Bring any job description. We extract the signal terms automatically.</p>
-            </div>
-            <div class="step-card">
-                <span class="step-num step-3">03</span>
-                <h4 class="step-title">Get a clear score</h4>
-                <p class="step-desc">See match percentage, matched skills, and missing keywords in seconds.</p>
-            </div>
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    
+    # Use native columns to place the 3 components side-by-side safely
+    step1, step2, step3 = st.columns(3, gap="large")
+    
+    with step1:
+        st.markdown("""
+        <div style="background: white; border: 1px solid #f1f5f9; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%;">
+            <span style="font-size: 0.875rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; display: block;">01</span>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Upload a resume</h4>
+            <p style="font-size: 0.875rem; color: #64748b; line-height: 1.5;">Drop in a PDF or DOCX. We parse it locally for a fast first pass.</p>
         </div>
-    """, unsafe_allow_html=True)
-
-# ──────────────────────────────────────────────────────────────────────────────
-# 6. FOOTER
-# ──────────────────────────────────────────────────────────────────────────────
-st.markdown("""
-    <div class="custom-footer">
-        © 2026 Atsense · Crafted for modern hiring teams
-    </div>
-""", unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+        
+    with step2:
+        st.markdown("""
+        <div style="background: white; border: 1px solid #f1f5f9; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%;">
+            <span style="font-size: 0.875rem; font-weight: 700; color: #a855f7; margin-bottom: 0.5rem; display: block;">02</span>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Paste the job</h4>
+            <p style="font-size: 0.875rem; color: #64748b; line-height: 1.5;">Bring any job description. We extract the signal terms automatically.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with step3:
+        st.markdown("""
+        <div style="background: white; border: 1px solid #f1f5f9; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%;">
+            <span style="font-size: 0.875rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; display: block;">03</span>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Get a clear score</h4>
+            <p style="font-size: 0.875rem; color: #64748b; line-height: 1.5;">See match percentage, matched skills, and missing keywords in seconds.</p>
+        </div>
+        """, unsafe_allow_html=True)
