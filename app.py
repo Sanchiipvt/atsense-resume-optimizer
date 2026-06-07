@@ -136,11 +136,11 @@ st.markdown("""
     
     <div class="hero-container">
         <div class="hero-badge">
-            <span style="color: #a855f7;">✨</span> Powered by TF-IDF & cosine similarity
+            <span style="color: #a855f7;"></span> Powered by TF-IDF & cosine similarity
         </div>
         <h1 class="hero-title">
-            Screen resumes like a<br>
-            <span class="hero-gradient">human, at machine speed.</span>
+            Screen, score, and get shortlist<br>
+            <span class="hero-gradient">with confidence.</span>
         </h1>
         <p class="hero-subtitle">
             Upload a resume and paste a job description to instantly calculate the match score, surface matched skills, and spot the keywords you're missing.
