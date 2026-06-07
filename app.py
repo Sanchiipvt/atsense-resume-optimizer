@@ -134,7 +134,7 @@ st.markdown("""
     
     <div class="hero-container">
         <div class="hero-badge">
-            <span style="color: #a855f7;"></span> Powered by TF-IDF & cosine similarity
+            <span style="color: #a855f7;"></span> Powered by Semantic AI + Weighted Skill Matching
         </div>
         <h1 class="hero-title">
             Screen, score, and get shortlist<br>
