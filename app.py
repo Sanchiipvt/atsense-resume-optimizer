@@ -56,16 +56,47 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Global Styles */
+    /* 1. Global Styles & Background Matching Screenshot */
     html, body, [class*="st-"] {
         font-family: 'Inter', sans-serif !important;
     }
-    .reportview-container, .main {
-        background: linear-gradient(180deg, #f5f8ff 0%, #ffffff 100%);
+    .stApp {
+        background: linear-gradient(180deg, #eff6ff 0%, #ffffff 600px) !important;
     }
 
-    /* Your Custom Result Styles */
-    div[data-testid="stMetricValue"] { color: #8b5cf6 !important; } /* Updated to purple from new theme */
+    /* 2. OVERRIDE STREAMLIT'S DEFAULT PRIMARY BUTTON */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(90deg, #60a5fa 0%, #c084fc 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        padding: 0.5rem 2.5rem !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+        box-shadow: 0 4px 14px 0 rgba(168, 85, 247, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background: linear-gradient(90deg, #3b82f6 0%, #a855f7 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4) !important;
+        color: white !important;
+    }
+
+    /* 3. Style the File Uploader to match the screenshot */
+    [data-testid="stFileUploadDropzone"] {
+        border: 2px dashed #cbd5e1 !important;
+        border-radius: 1rem !important;
+        background-color: transparent !important;
+        transition: all 0.2s ease !important;
+    }
+    [data-testid="stFileUploadDropzone"]:hover {
+        border-color: #a855f7 !important;
+        background-color: #f8fafc !important;
+    }
+
+    /* 4. Your Custom Result Styles */
+    div[data-testid="stMetricValue"] { color: #8b5cf6 !important; } 
     div[data-testid="stExpander"] details summary {
         font-size: 0.9rem;
         font-weight: 500;
