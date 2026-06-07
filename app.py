@@ -71,26 +71,6 @@ st.markdown("""
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4) !important;
     }
-
-    /* 4. Fix File Uploader */
-    div[data-testid="stFileUploadDropzone"] { 
-        background-color: #ffffff !important; 
-        border: 2px dashed #cbd5e1 !important; 
-        border-radius: 0.5rem !important;
-        /* Removed the padding/height commands that were breaking the text */
-    }
-    
-    /* Make the hover state look nice */
-    div[data-testid="stFileUploadDropzone"]:hover {
-        border-color: #a855f7 !important;
-        background-color: #f8fafc !important;
-    }
-
-    div[data-baseweb="textarea"] > div { 
-        background-color: #ffffff !important; 
-        border: 1px solid #e2e8f0 !important; 
-        border-radius: 0.5rem !important;
-    }
     
     /* 5. Badges */
     div[data-testid="stMetricValue"] { color: #8b5cf6 !important; } 
