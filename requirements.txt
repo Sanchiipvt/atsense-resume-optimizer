@@ -1,6 +1,26 @@
+# ATSense — Production Requirements
+# =====================================
+# Core UI
+streamlit>=1.35.0
+
+# Document parsing
+pdfplumber>=0.10.0
+python-docx>=1.1.0
+
+# OCR fallback (Scenario B fix)
+pdf2image>=1.17.0
+pytesseract>=0.3.10
+
+# ML — semantic similarity (Tier 1 engine)
+# ~80MB download on first run; Apache-2.0 licence
+sentence-transformers>=2.7.0
+torch>=2.1.0            # CPU-only is fine; sentence-transformers will use it
+
+# ML — TF-IDF (Tier 2 fallback, always available)
+scikit-learn>=1.4.0
+
+# LLM optimiser
 google-generativeai>=0.5.0
+
+# Utilities
 python-dotenv>=1.0.0
-streamlit
-pdfplumber
-python-docx
-scikit-learn
